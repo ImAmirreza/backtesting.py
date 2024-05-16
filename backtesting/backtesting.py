@@ -707,7 +707,7 @@ class _Broker:
             ("commission should be between -10% "
              f"(e.g. market-maker's rebates) and 10% (fees), is {commission}")
         assert 0 < margin <= 1, f"margin should be between 0 and 1, is {margin}"
-        assert 0 <= spread < .1, f"spread should be between 0 and 10%, is {spread}"
+        assert 0 <= spread < .10, f"spread should be between 0 and 10, is {spread}"
         self._data: _Data = data
         self._cash = cash
         self._commission = commission
@@ -793,7 +793,11 @@ class _Broker:
                 return base_price * (1 + self._spread / 2)  # Long position entry price (ask)
             else:
                 return base_price * (1 - self._spread / 2)  # Short position entry price (bid)
-        return base_price
+            # Adjust for commission
+        if self._commission:
+            adjusted_price *= (1 + copysign(self._commission, size or 1))
+
+        return adjusted_price
 
     @property
     def equity(self) -> float:
